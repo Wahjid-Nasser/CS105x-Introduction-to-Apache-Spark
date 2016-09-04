@@ -1,0 +1,130 @@
+wordsDF = sqlContext.createDataFrame([('cat',), ('elephant',), ('rat',), ('rat',), ('cat', )], ['word'])
+wordsDF.show()
+print type(wordsDF)
+wordsDF.printSchema()
+
+from pyspark.sql.functions import lit, concat
+pluralDF = wordsDF.select(concat(wordsDF.word, lit('s')).alias('word'))
+pluralDF.show()
+
+# Load in the testing code and check to see if your answer is correct
+# If incorrect it will report back '1 test failed' for each failed test
+# Make sure to rerun any cell you change before trying the test again
+from databricks_test_helper import Test
+# TEST Using DataFrame functions to add an 's' (1b)
+Test.assertEquals(pluralDF.first()[0], 'cats', 'incorrect result: you need to add an s')
+Test.assertEquals(pluralDF.columns, ['word'], "there should be one column named 'word'")
+
+# TODO: Replace <FILL IN> with appropriate code
+#wordsDF.select(concat(wordsDF.word, lit('s')).alias('word'))
+from pyspark.sql.functions import length
+pluralLengthsDF = pluralDF.select(length('word'))
+pluralLengthsDF.show()
+#pluralLengthsDF.printSchema()
+
+# TEST Length of each word (1e)
+from collections import Iterable
+asSelf = lambda v: map(lambda r: r[0] if isinstance(r, Iterable) and len(r) == 1 else r, v)
+Test.assertEquals(set(asSelf(pluralLengthsDF.collect())), {4, 9, 4, 4, 4},
+                  'incorrect values for pluralLengths')
+                  
+# TODO: Replace <FILL IN> with appropriate code
+wordCountsDF = (wordsDF.groupby('word').count())
+wordCountsDF.show()
+
+# TODO: Replace <FILL IN> with appropriate code
+uniqueWordsCount = wordCountsDF.distinct().count()
+print uniqueWordsCount
+
+#wordCountsDF.printSchema()
+# TODO: Replace <FILL IN> with appropriate code
+# df.groupBy().avg().collect()
+
+averageCount = (wordCountsDF.groupBy().mean('count')).collect()
+#averageCount = round(averageCount, 2)
+print averageCount
+#wordCountsDF.printSchema()
+
+# TODO: Replace <FILL IN> with appropriate code
+def wordCount(wordListDF):
+    """Creates a DataFrame with word counts.
+    Args:
+        wordListDF (DataFrame of str): A DataFrame consisting of one string column called 'word'.
+    Returns:
+        DataFrame of (str, int): A DataFrame containing 'word' and 'count' columns.
+    """
+    return wordsDF.groupby('word').count()
+wordCount(wordsDF).show()
+
+# TODO: Replace <FILL IN> with appropriate code
+from pyspark.sql.functions import regexp_replace, trim, col, lower
+def removePunctuation(column):
+    """Removes punctuation, changes to lower case, and strips leading and trailing spaces.
+
+    Note:
+        Only spaces, letters, and numbers should be retained.  Other characters should should be
+        eliminated (e.g. it's becomes its).  Leading and trailing spaces should be removed after
+        punctuation is removed.
+
+    Args:
+        column (Column): A Column containing a sentence.
+
+    Returns:
+        Column: A Column named 'sentence' with clean-up operations applied.
+    """
+    #df = column.createDataFrame([('100-200',)], ['str'])
+    #df.select(regexp_replace('str', '(\d+)', '--').alias('d')).collect()
+   
+    return regexp_replace(trim(lower(column)),'[^a-z| |0-9]','' )
+  
+  #regexp_replace(textcol.collect(),'[^a-z| |0-9]', '',)
+  #regexp_replace('str', '(\d+)', '--').alias('d'))
+
+sentenceDF = sqlContext.createDataFrame([('Hi, you!',),
+                                         (' No under_score!',),
+                                         (' *      Remove punctuation then spaces  * ',)], ['sentence'])
+sentenceDF.show(truncate=False)
+(sentenceDF
+ .select(removePunctuation(col('sentence')))
+ .show(truncate=False))
+
+fileName = "dbfs:/databricks-datasets/cs100/lab1/data-001/shakespeare.txt"
+
+shakespeareDF = sqlContext.read.text(fileName).select(removePunctuation(col('value')).alias('word'))
+shakespeareDF.show(15, truncate=False)
+shakespeareDF.printSchema()
+
+# TODO: Replace <FILL IN> with appropriate code
+# df.select(split(df.s, '[0-9]+').alias('s'))
+# eDF.select(explode(eDF.intlist).alias("anInt")).collect()
+from pyspark.sql.functions import split, explode
+
+shakeWordsDFsplit = ''
+shakeWordsDF=''
+
+shakeWordsDFsplit = (shakespeareDF.select(explode(split(shakespeareDF.word,' ').alias('word'))))
+
+shakeWordsDF = (shakeWordsDFsplit.where((shakeWordsDFsplit.col != '')).withColumnRenamed('col','word'))
+
+#shakeWordsDFsplit.printSchema()
+shakeWordsDF.printSchema()
+
+#shakeWordsDF.show()
+#shakeWordsDFCount = shakeWordsDF.count()
+#print shakeWordsDFCount
+#shakeWordsDF.printSchema()
+#display(shakeWordsDF,15)
+
+# TODO: Replace <FILL IN> with appropriate code
+#wordCountsDF = (wordsDF.groupby('word').count())
+#df.sort(df.age.desc()).collect()
+
+from pyspark.sql.functions import desc
+topWordsAndCountsDFCount = (shakeWordsDF.groupby('word').count().withColumnRenamed('count','counting'))
+topWordsAndCountsDF = topWordsAndCountsDFCount.sort(topWordsAndCountsDFCount.counting.desc())
+#topWordsAndCountsDFCount.show()
+#topWordsAndCountsDFCount.printSchema()
+#display(topWordsAndCountsDFOrder,15
+topWordsAndCountsDF.show()
+#wordCountsDF.show()
+
