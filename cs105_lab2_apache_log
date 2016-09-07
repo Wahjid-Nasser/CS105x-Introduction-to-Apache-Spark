@@ -1,0 +1,261 @@
+from pyspark.sql.functions import desc
+# TODO: Replace <FILL IN> with appropriate code
+# You are welcome to structure your solution in a different way, so long as
+# you ensure the variables used in the next Test section are defined
+# bad_content_size_df = base_df.filter(~ base_df['value'].rlike(r'\d+$'))
+
+logs_df_n200 = logs_df.filter(logs_df['status'] != 200)
+
+logs_sum_df = (logs_df_n200
+            .groupBy('path')
+            .count()
+            .sort('count', ascending=False))
+
+#logs_df.count()
+display(logs_sum_df)
+
+#display(logs_df_n200, 15)
+
+#display(logs_df, 15)
+
+
+
+# DataFrame containing all accesses that did not return a code 200
+
+#not200DF = logs_df.<FILL IN>
+#not200DF.show(10)
+# Sorted DataFrame containing all paths and the number of times they were accessed with non-200 return code
+#logs_sum_df = not200DF.<FILL IN>
+
+#print 'Top Ten failed URLs:'
+#logs_sum_df.show(10, False)
+
+# 1043177 -102330
+
+# TODO: Replace <FILL IN> with appropriate code
+unique_host_count = (logs_df
+                     .select('host')
+                     .distinct())
+unique_host_count = unique_host_count.count()
+print 'Unique hosts: {0}'.format(unique_host_count)
+
+# TODO: Replace <FILL IN> with appropriate code
+from pyspark.sql.functions import dayofmonth
+
+#logs_sum_df = (logs_df_n200
+#            .groupBy('path')
+#            .count()
+#            .sort('count', ascending=False))
+#.sort('count', ascending=False))
+#.sort('status').cache())
+day_to_host_pair_df = (logs_df.select('host',dayofmonth('time').alias('dm')))
+daily_hosts_df = (day_to_host_pair_df.distinct().groupby('dm').count().cache())
+#display(day_to_host_pair_df)
+daily_hosts_df.printSchema()
+#(logs_df.select('host').groupby(dayofmonth('time')).count())
+#display(logs_df)
+
+
+#day_to_host_pair_df = logs_df.<FILL IN>
+#day_group_hosts_df = day_to_host_pair_df.<FILL IN>
+#daily_hosts_df = day_group_hosts_df.<FILL IN>
+
+#print 'Unique hosts per day:'
+#daily_hosts_df.show(30, False)
+
+# TODO: Your solution goes here
+
+days_with_hostsa = daily_hosts_df.select('dm')
+# lambda r: (r[0], r[1])
+#display(days_with_hosts)
+
+test_days = range(1, 23)
+test_days.remove(2)
+
+#a_loop = (lambda x: for x in days_with_hosts)
+#print(a_loop)
+#print(sample2)
+
+#a_loop = days_with_hosts.map(lambda (l): '{0}: {1}'.format( l))  # to 'lineNum: line'
+#for i in days_with_hosts:
+#        print(days_with_hosts.select([i]))
+        #y.append(z)
+#a_loop = days_with_hosts.filter(lambda x: x)
+#print(a_loop)
+#print(days_with_hosts)
+
+days_with_hosts = []
+for teenName in days_with_hostsa.collect():
+  #print(teenName.dm.real)
+  days_with_hosts.append(teenName.dm.real)
+  
+#days_with_hosts = y
+#print(days_with_hosts)
+#print(y)
+#display(days_with_hosts.select('dm'))
+
+hostsOne = daily_hosts_df.select('count').alias('cnt')
+#hostsOne.printSchema()
+hosts = []
+for hostname in hostsOne.collect():
+  hosts.append(hostname['count'].real)
+  
+type(teenName)
+
+#days_with_hosts = 
+#hosts = <FILL IN>
+#for <FILL IN>:
+#  <FILL IN>
+
+#print(days_with_hosts)
+#print(hosts)
+
+# TODO: Replace <FILL IN> with appropriate code
+#day_to_host_pair_df = (logs_df.select('host',dayofmonth('time').alias('dm')))
+daily_hosts_df_2 = (day_to_host_pair_df.groupby('dm','host').count().cache())
+avg_daily_req_per_host_df = (daily_hosts_df_2.groupBy('dm').avg('count').withColumnRenamed('avg(count)','avg_reqs_per_host_per_day').withColumnRenamed('dm','day').cache())
+display(avg_daily_req_per_host_df)
+
+
+
+#total_req_per_day_df = logs_df.<FILL IN>
+
+#avg_daily_req_per_host_df = (
+ # total_req_per_day_df.<FILL IN>
+#)
+#print 'Average number of daily requests per Hosts is:\n'
+#avg_daily_req_per_host_df.show()
+
+# TEST Average number of daily requests per hosts (4e)
+avg_daily_req_per_host_list = (
+  avg_daily_req_per_host_df.select('day', avg_daily_req_per_host_df['avg_reqs_per_host_per_day'].cast('integer').alias('avg_requests'))
+                           .collect()
+)
+
+values = [(row[0], row[1]) for row in avg_daily_req_per_host_list]
+print values
+Test.assertEquals(values, [(1, 13), (3, 12), (4, 14), (5, 12), (6, 12), (7, 13), (8, 13), (9, 14), (10, 13), (11, 14), (12, 13), (13, 13), (14, 13), (15, 13), (16, 13), (17, 13), (18, 13), (19, 12), (20, 12), (21, 13), (22, 12)], 'incorrect avgDailyReqPerHostDF')
+Test.assertTrue(avg_daily_req_per_host_df.is_cached, 'incorrect avg_daily_req_per_host_df.is_cached')
+
+# TODO: Replace <FILL IN> with appropriate code
+
+#avgs = (avg_daily_req_per_host_df.avg_reqs_per_host_per_day.cast('integer').alias('avg_requests'))
+days_with_avg = avg_daily_req_per_host_df.map(lambda s: s[0]).collect()
+avgs = avg_daily_req_per_host_df.map(lambda s: s[1]).collect()
+#days_with_avgs = []
+#for teenName in days_with_avg.collect():
+#  print('hello')
+  #days_with_avgs.append(teenName.[''].real)
+#for <FILL IN>:
+#  <FILL IN>
+#print(days_with_avg)
+print(avgs)
+
+# TODO: Replace <FILL IN> with appropriate code
+
+not_found_df = logs_df.filter(logs_df['status'] == 404).cache()
+display(not_found_df)
+#print('Found {0} 404 URLs').format(not_found_df.count())
+
+# TODO: Replace <FILL IN> with appropriate code
+
+unique_not_found_paths_df = not_found_df.distinct().groupby('path').count().alias('counts')
+
+#display(not_found_paths_df)
+
+#unique_not_found_paths_df = not_found_paths_df.<FILL IN>
+
+#print '404 URLS:\n'
+#unique_not_found_paths_df.show(n=40, truncate=False)
+
+# TODO: Replace <FILL IN> with appropriate code
+#(wordsDF.groupby('word').count().sort('count', ascending=False).collect())
+#not_found_df.count()
+
+top_20_grouped = not_found_df.groupby('path').count()
+top_20_grouped.count()
+top_20_not_found_df = top_20_grouped.sort('count', ascending=False)
+#top_20_not_found_df = top_20_grouped.sort('count', ascending=False).collect()
+#display(not_found_paths_df)
+
+#df_404_in_not_found = not_found_df.filter(not_found_df['path'] == '/pub/winvn/readme.txt')
+#df_404_in_not_found.count()
+#df_404 = logs_df.filter( logs_df['status'] == 404).filter(logs_df['path'] == '/pub/winvn/readme.txt')
+#df_404.count()
+#display(df_404.sort('path', ascending=False))
+#display(not_found_paths_df.sort('count', ascending=False))
+
+#print 'Top Twenty 404 URLs:\n'
+#top_20_not_found_df.show(n=20, truncate=False)
+
+# TODO: Replace <FILL IN> with appropriate code
+#not_found_df = logs_df.filter(logs_df['status'] == 404).cache()
+#display(not_found_df)
+
+hosts_404_count_df = not_found_df.groupby('host').count().sort('count', ascending=False)
+display(hosts_404_count_df)
+
+#print 'Top 25 hosts that generated errors:\n'
+#hosts_404_count_df.show(n=25, truncate=False)
+
+# TODO: Replace <FILL IN> with appropriate code
+#day_to_host_pair_df = (logs_df.select('host',dayofmonth('time').alias('dm')))
+#daily_hosts_df = (day_to_host_pair_df.distinct().groupby('dm').count().cache())
+#display(day_to_host_pair_df)
+
+day_404s = not_found_df.select(dayofmonth('time').alias('dm'))
+
+errors_by_date_sorted_df = day_404s.groupby('dm').count().sort('dm').cache()
+display(errors_by_date_sorted_df)
+#errors_by_date_sorted_df = not_found_df.<FILL IN>
+
+#print '404 Errors by day:\n'
+#errors_by_date_sorted_df.show()
+
+# TODO: Replace <FILL IN> with appropriate code
+days_with_errors_404 = errors_by_date_sorted_df.map(lambda s: s[0]).collect()
+errors_404_by_day = errors_by_date_sorted_df.map(lambda s: s[1]).collect()
+#days_with_avgs = []
+#for teenName in days_with_avg.collect():
+#  print('hello')
+  #days_with_avgs.append(teenName.[''].real)
+#for <FILL IN>:
+#  <FILL IN>
+#print(days_with_avg)
+
+#print(avgs)
+#days_with_errors_404 = <FILL IN>
+#errors_404_by_day = <FILL IN>
+#for <FILL IN>:
+#  <FILL IN>
+
+print days_with_errors_404
+print errors_404_by_day
+
+# TODO: Replace <FILL IN> with appropriate code
+#display(errors_by_date_sorted_df)
+top_err_date_df = errors_by_date_sorted_df.sort('count', ascending=False)
+display(top_err_date_df)
+
+#print 'Top Five Dates for 404 Requests:\n'
+#top_err_date_df.show(5)
+
+# TODO: Replace <FILL IN> with appropriate code
+from pyspark.sql.functions import hour
+#display(not_found_df)
+hour_records_sorted_df = not_found_df.groupby(hour('time')).count().cache()
+display(hour_records_sorted_df)
+
+#print 'Top hours for 404 requests:\n'
+#hour_records_sorted_df.show(24)
+
+# TODO: Replace <FILL IN> with appropriate code
+
+
+
+hours_with_not_found = hour_records_sorted_df.map(lambda s: s[0]).collect()
+not_found_counts_per_hour = hour_records_sorted_df.map(lambda s: s[1]).collect()
+
+print hours_with_not_found
+print not_found_counts_per_hour
+
